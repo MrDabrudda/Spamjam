@@ -1,4 +1,4 @@
-# 🕵️‍♂️ SpamJam — Email Threat Intelligence Analyzer
+# 🕵️‍♂️ SpamJam — Email Analyzer
 
 SpamJam is a powerful **open-source Python tool** that extracts and analyzes email headers, URLs, and infrastructure to identify malicious senders, botnets, phishing campaigns, and spam sources. It provides **actionable abuse contacts**, **reputation scores**, and **reporting guidance** — all in one report.
 
