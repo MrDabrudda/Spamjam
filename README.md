@@ -29,7 +29,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 - **VirusTotal**: Submits spam URLs, leaves a comment and down votes the spam URLs
 - **URLSCAN.io**: Submits spam URLs for analysis.
 - **Hybrid Analysis**: Submits spam URLs for analysis.
-- **Spam.org**: Submits spam URLs which then get submitted to authorites.
+- **Spam.org**: Submits spam emails which then get submitted to authorites.
 - **CRDF**: Submits spam URLs for analysis.
 
 ### 🌍 **Global Reporting**
