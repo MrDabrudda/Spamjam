@@ -87,7 +87,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    Run `python spamjam.py`
   
    Thunderbird will open up with two emails.  One email goes to the host of the spammers.  The second email will go to the Global Abuse emails.  Review the emails before hitting `Send`.
-   The web browser will open with the Google Safe Browsing link and the spam URL filled in.  You can add `Additional details` such as `Phishing scam URL from UCE spam email` and click submit.  Rinse and report for the other Google Safe Browsing tabs in the web browser to repeat the spam URLs to Google
+   The web browser will open with the Google Safe Browsing link and the spam URL filled in.  You can add `Additional details` such as `Phishing scam URL from UCE spam email` and click submit.  Rinse and repeat for the other Google Safe Browsing tabs in the web browser to report the spam URLs to Google
   
    Wait until the script finishes
   
