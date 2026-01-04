@@ -12,47 +12,44 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 ## 🌟 Features
 
 ### 🔍 **Email Analysis**
-- Extracts sender IP from headers (`X-Originating-IP`, `Received`, etc.)
-- Parses `.eml` files (RFC 2822 format)
-- Redacts specified email addresses for privacy
-- Extracts and **deduplicates URLs** (ignores `http`/`https`, `www` differences)
+- **Header Extraction**: Automatically identifies and extracts the true sender IP from complex headers like `X-Originating-IP` and `Received` chains.
+- **EML Parsing**: Full support for RFC 2822 `.eml` files, handling attachments and multipart messages.
+- **Privacy Redaction**: Automatically detects and redacts private email addresses in the output to protect victim identity.
+- **URL Extraction**: Scrapes and deduplicates URLs from the email body, normalizing them (ignoring `http`/`https`, `www`) for analysis.
 
 ### 🌐 **Infrastructure Intelligence**
-- Resolves domains to **hosting IPs** (A records)
-- Performs **MX record analysis** with mail server IPs
-- Retrieves **WHOIS data** for IPs and domains
-- Displays **reverse DNS (PTR)** for IPs
+- **Domain Resolution**: Resolves domains to their hosting IPs (A records) to identify physical infrastructure.
+- **Mail Server Analysis**: Performs deep MX record lookups to uncover the mail servers handling the domain's traffic.
+- **WHOIS Lookup**: Retrieves registration data for IPs and domains to identify owners and registrars.
+- **Reverse DNS (PTR)**: Checks PTR records to verify if IP addresses map back to the claimed domain.
+- **Traceroute Analysis**: Traces the network path to the suspect IP to identify intermediate hops and network location (requires `traceroute`).
 
 ### 🛡️ **Reputation & Threat Checks**
-- **AbuseIPDB**: Abuse confidence score, report count, country
-- **VirusTotal**: Malicious/suspicious detections for IPs and URLs
-- **DNSBL**: Checks against Spamhaus, SORBS, and more
-- **Botnet detection**: Flags IPs likely part of zombie networks
+- **AbuseIPDB Integration**: Fetches abuse confidence scores, report counts, and ISP/Country data.
+- **VirusTotal Scanning**: Checks IPs and URLs against VirusTotal's database for malicious or suspicious flags.
+- **DNSBL Lookups**: Queries major DNS Blacklists (Spamhaus, SORBS, etc.) to check if the sender is a known spammer.
+- **Botnet Detection**: Heuristically flags IPs that exhibit characteristics of zombie networks or compromised hosts.
 
 ### 📧 **Abuse Contact Intelligence**
-- **Hosting Abuse Contact**: From IP WHOIS
-- **MX Abuse Contact**: From mail server IP WHOIS
-- **Registrar Abuse Contact**: From domain WHOIS
-- **Smart fallback**: Uses any valid email if no `abuse@` found
-- **Deduplicated list**: All unique abuse contacts in one place
+- **Comprehensive Contact Discovery**: Extracts abuse contacts from Hosting IPs, Mail Server IPs, and Domain Registrars via WHOIS.
+- **Smart Fallback**: Intelligently identifies alternative contact emails if a specific `abuse@` address is missing.
+- **Deduplication**: Aggregates and removes duplicate contact emails to provide a clean list for reporting.
 
 ### 🌍 **Global Reporting**
-- Built-in list of **global abuse reporting addresses**:
+- **Pre-configured Reporting List**: Includes a curated list of global abuse reporting addresses such as:
   - `reportphishing@apwg.org` (Anti-Phishing Working Group)
   - `phishing-report@us-cert.gov` (CISA)
   - `scam@netcraft.com` (Netcraft)
-  - `spam@donotpay.com`, `spamreport@spamrl.com`, and more
+  - `spam@donotpay.com`, `spamreport@spamrl.com`, and others.
 
 ### ⚡ **Performance & Efficiency**
-- **Disk-based caching**: Persists results across runs (1-hour TTL)
-  - Caches DNS, WHOIS, AbuseIPDB, VirusTotal, DNSBL lookups
-  - Reduces API usage and speeds up repeated analysis
-- **Batch processing**: Analyze all `.eml` files in `emails/` folder
+- **Smart Caching**: Implements disk-based caching with a 1-hour TTL for DNS, WHOIS, and API lookups (AbuseIPDB, VirusTotal) to minimize API quota usage and speed up re-runs.
+- **Batch Processing**: Capable of processing multiple `.eml` files in the `emails/` directory simultaneously.
 
 ### 📁 **Output**
-- Timestamped report files (`results_YYYY-MM-DD_HH-MM-SS.txt`)
-- Clean, human-readable format with logical sections
-- Raw email content (with redacted private addresses)
+- **Detailed Reports**: Generates timestamped text reports (`results_YYYY-MM-DD_HH-MM-SS.txt`) containing all analysis data.
+- **Human-Readable**: Organized with logical sections for easy reading and actionability.
+- **Safe Evidence**: Includes the raw email content with sensitive addresses redacted, ready for submission as evidence.
 
 ---
 
@@ -60,8 +57,8 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 - Python 3.6+
 - Dependencies: `dnspython`, `requests`
-
----
+- Software: `traceroute`,` web browser`, `Thunderbird Email Client`
+- Optional: `A life long hatred of spammers and scammers`
 
 ## ⚙️ Setup
 
@@ -76,3 +73,9 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 2. **Configure API Keys**
    Open `utils/config.py` and enter your API keys in the configuration section.
+
+   ***Configure Email Redaction***
+   Add your email addresses, names, usernames, etc to the redacted section so your email, name, username does not get included in the submitted abuse reports.
+
+   ***Configure Thunderbird Email Client***
+   Setup Thunderbird to send and receive emails.  You can use Hotmail, Gmail, etc as long as the email provider supports IMAP and SMTP
