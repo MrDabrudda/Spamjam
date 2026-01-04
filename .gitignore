@@ -1,0 +1,37 @@
+# .gitignore
+
+# Ignore contents of these folders, but keep the folders themselves
+#!emails/*
+#!emails/.gitkeep
+
+#!output/*
+#!output/.gitkeep
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.gitkeep
+__pycache__/
+.git/
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Date-stamped output files
+output/results_*.txt
+
+#ignore venv folder
+venv/
+.venv/
+
+#ignore EML files
+*.eml
+
+#ignore /utils/config.py
+utils/config.py
+
+#ignore /.spamjam_cache file
+.spamjam_cache/cache
