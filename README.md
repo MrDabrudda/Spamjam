@@ -61,9 +61,11 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    ```bash
    git clone https://github.com/MrDabrudda/SpamJam.git
    cd SpamJam
-
+  
+  Install the dependancies:
    sudo apt install traceroute
-   pip install -r requirements.txt
+   sudo apt install python3-dnspython
+   sudo apt install python3-requests
    ```
 
 2. **Configure API Keys**
