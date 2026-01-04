@@ -25,26 +25,24 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 - **Traceroute Analysis**: Traces the network path to the suspect IP to identify intermediate hops and network location (requires `traceroute`).
 
 ### 🛡️ **Reputation & Threat Checks**
-- **AbuseIPDB Integration**: Fetches abuse confidence scores, report counts, and ISP/Country data.
-- **VirusTotal Scanning**: Checks IPs and URLs against VirusTotal's database for malicious or suspicious flags.
-- **DNSBL Lookups**: Queries major DNS Blacklists (Spamhaus, SORBS, etc.) to check if the sender is a known spammer.
-- **Botnet Detection**: Heuristically flags IPs that exhibit characteristics of zombie networks or compromised hosts.
-
-### 📧 **Abuse Contact Intelligence**
-- **Comprehensive Contact Discovery**: Extracts abuse contacts from Hosting IPs, Mail Server IPs, and Domain Registrars via WHOIS.
-- **Smart Fallback**: Intelligently identifies alternative contact emails if a specific `abuse@` address is missing.
-- **Deduplication**: Aggregates and removes duplicate contact emails to provide a clean list for reporting.
+- **AbuseIPDB**: Submits spam URLs for blacklisting and blocklists
+- **VirusTotal**: Submits spam URLs, leaves a comment and down votes the spam URLs
+- **URLSCAN.io**: Submits spam URLs for analysis.
+- **Hybrid Analysis**: Submits spam URLs for analysis.
+- **Spam.org**: Submits spam URLs which then get submitted to authorites.
+- **CRDF**: Submits spam URLs for analysis.
 
 ### 🌍 **Global Reporting**
 - **Pre-configured Reporting List**: Includes a curated list of global abuse reporting addresses such as:
   - `reportphishing@apwg.org` (Anti-Phishing Working Group)
-  - `phishing-report@us-cert.gov` (CISA)
   - `scam@netcraft.com` (Netcraft)
-  - `spam@donotpay.com`, `spamreport@spamrl.com`, and others.
+  - `spam@donotpay.com` (DoNotPay)
+  - `spamreport@spamrl.com` (SpamURL)
+  - `abuse@phishtank.com` (Phish Tank)
+  Submits the email headers and body to the Global Reporting List minus your redacted email addresses, usenames, etc.
 
 ### ⚡ **Performance & Efficiency**
-- **Smart Caching**: Implements disk-based caching with a 1-hour TTL for DNS, WHOIS, and API lookups (AbuseIPDB, VirusTotal) to minimize API quota usage and speed up re-runs.
-- **Batch Processing**: Capable of processing multiple `.eml` files in the `emails/` directory simultaneously.
+- **Smart Caching**: Implements disk-based caching with a 30-minutes TTL for DNS, WHOIS, and API lookups (AbuseIPDB, VirusTotal) to minimize API quota usage and speed up re-runs.
 
 ### 📁 **Output**
 - **Detailed Reports**: Generates timestamped text reports (`results_YYYY-MM-DD_HH-MM-SS.txt`) containing all analysis data.
@@ -54,7 +52,6 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 ---
 
 ## 📦 Requirements
-
 - Python 3.6+
 - Dependencies: `dnspython`, `requests`
 - Software: `traceroute`,` web browser`, `Thunderbird Email Client`
@@ -64,7 +61,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/SpamJam.git
+   git clone https://github.com/MrDabrudda/SpamJam.git
    cd SpamJam
 
    sudo apt install traceroute
@@ -72,10 +69,12 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    ```
 
 2. **Configure API Keys**
-   Open `utils/config.py` and enter your API keys in the configuration section.
+   Open `utils/config.py` and enter your API keys in the API Keys section.  You will need to sign up with each service for the API keys.
 
    ***Configure Email Redaction***
-   Add your email addresses, names, usernames, etc to the redacted section so your email, name, username does not get included in the submitted abuse reports.
+   Add your email addresses, names, usernames, etc to the Redacted Emails section of the config.py so your email, name, username does not get included in the submitted abuse reports.  Many reports will be public.
 
    ***Configure Thunderbird Email Client***
-   Setup Thunderbird to send and receive emails.  You can use Hotmail, Gmail, etc as long as the email provider supports IMAP and SMTP
+   Setup Thunderbird to send and receive emails.  You can use Hotmail/Outlook, Gmail, etc as long as the email provider supports IMAP and SMTP.
+   Hotmail/Outlook.com will bitch and complain sometimes and prevent you from sending emails...lock your account, etc...especially when there is an abuse@microsoft.com email address in your abuse report.
+   I guess Micro$oft doesn't like it when you report one of their IP addresses which is repeatedly being abused by spammers.
