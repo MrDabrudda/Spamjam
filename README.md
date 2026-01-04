@@ -51,8 +51,8 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 ## 📦 Requirements
 - Python 3.6+
-- Dependencies: `dnspython`, `requests`
-- Software: `traceroute`,` web browser`, `Thunderbird Email Client`
+- Dependencies: `dnspython`, `requests`, `traceroute`
+- Software: ` web browser`, `Thunderbird Email Client`
 - Optional: `A life long hatred of spammers and scammers`
 
 ## ⚙️ Setup
