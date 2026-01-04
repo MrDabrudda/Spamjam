@@ -13,7 +13,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 ### 🔍 **Email Analysis**
 - **Header Extraction**: Automatically identifies and extracts the true sender IP from complex headers like `X-Originating-IP` and `Received` chains.
-- **EML Parsing**: Full support for RFC 2822 `.eml` files, handling attachments and multipart messages.
+- **EML Parsing**: Full support for `.eml` files, handling attachments and multipart messages.
 - **Privacy Redaction**: Automatically detects and redacts private email addresses in the output to protect victim identity.
 - **URL Extraction**: Scrapes and deduplicates URLs from the email body, normalizing them (ignoring `http`/`https`, `www`) for analysis.
 
@@ -78,3 +78,13 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    Setup Thunderbird to send and receive emails.  You can use Hotmail/Outlook, Gmail, etc as long as the email provider supports IMAP and SMTP.
    Hotmail/Outlook.com will bitch and complain sometimes and prevent you from sending emails...lock your account, etc...especially when there is an abuse@microsoft.com email address in your abuse report.
    I guess Micro$oft doesn't like it when you report one of their IP addresses which is repeatedly being abused by spammers.
+
+   **Save your Spam emails**
+   Right click the spam email and select Save As/Download/Export and save the spam email as a .eml file.
+   Copy/paste the .eml files into the /Spamjam/emails folder
+   Open a terminal.  CD to the /Spamjam folder
+   Run `python spamjam.py`
+   Thunderbird will open up with two emails.  One email goes to the host of the spammers.  The second email will go to the Global Abuse emails.  Review the emails before hitting `Send`.
+   The web browser will open with the Google Safe Browsing link and the spam URL filled in.  You can add `Additional details` such as `Phishing scam URL from UCE spam email` and click submit.  Rinse and report for the other Google Safe Browsing tabs in the web browser to report the spam URLs to Google
+   Wait until the script finishes
+   You can check the /Spamjam/output folder for the final report which has already been reported via email
