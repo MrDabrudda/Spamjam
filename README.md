@@ -37,7 +37,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
   - `spam@donotpay.com` (DoNotPay)
   - `spamreport@spamrl.com` (SpamURL)
   - `abuse@phishtank.com` (Phish Tank)
-  Submits the email headers and body to the Global Reporting List minus your redacted email addresses, usenames, etc.
+  - Submits the email headers and body to the Global Reporting List minus your redacted email addresses, usenames, etc.
 
 ### ⚡ **Performance & Efficiency**
 - **Smart Caching**: Implements disk-based caching with a 30-minutes TTL for DNS, WHOIS, and API lookups (AbuseIPDB, VirusTotal) to minimize API quota usage and speed up re-runs.
