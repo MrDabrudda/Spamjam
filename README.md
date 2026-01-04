@@ -19,9 +19,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
 
 ### 🌐 **Infrastructure Intelligence**
 - **Domain Resolution**: Resolves domains to their hosting IPs (A records) to identify physical infrastructure.
-- **Mail Server Analysis**: Performs deep MX record lookups to uncover the mail servers handling the domain's traffic.
 - **WHOIS Lookup**: Retrieves registration data for IPs and domains to identify owners and registrars.
-- **Reverse DNS (PTR)**: Checks PTR records to verify if IP addresses map back to the claimed domain.
 - **Traceroute Analysis**: Traces the network path to the suspect IP to identify intermediate hops and network location (requires `traceroute`).
 
 ### 🛡️ **Reputation & Threat Checks**
