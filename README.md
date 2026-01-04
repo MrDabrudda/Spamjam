@@ -62,29 +62,32 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    git clone https://github.com/MrDabrudda/SpamJam.git
    cd SpamJam
   
-  Install the dependancies:
+2. **Install the dependancies**
    sudo apt install traceroute
    sudo apt install python3-dnspython
    sudo apt install python3-requests
    ```
 
-2. **Configure API Keys**
+3. **Configure API Keys**
    Open `utils/config.py` and enter your API keys in the API Keys section.  You will need to sign up with each service for the API keys.
 
-   ***Configure Email Redaction***
+4. ***Configure Email Redaction***
    Add your email addresses, names, usernames, etc to the Redacted Emails section of the config.py so your email, name, username does not get included in the submitted abuse reports.  Many reports will be public.
 
-   ***Configure Thunderbird Email Client***
+5. ***Configure Thunderbird Email Client***
    Setup Thunderbird to send and receive emails.  You can use Hotmail/Outlook, Gmail, etc as long as the email provider supports IMAP and SMTP.
    Hotmail/Outlook.com will bitch and complain sometimes and prevent you from sending emails...lock your account, etc...especially when there is an abuse@microsoft.com email address in your abuse report.
    I guess Micro$oft doesn't like it when you report one of their IP addresses which is repeatedly being abused by spammers.
 
-   **Save your Spam emails**
+6. ***Save your Spam emails***
    Right click the spam email and select Save As/Download/Export and save the spam email as a .eml file.
    Copy/paste the .eml files into the /Spamjam/emails folder
    Open a terminal.  CD to the /Spamjam folder
    Run `python spamjam.py`
+  
    Thunderbird will open up with two emails.  One email goes to the host of the spammers.  The second email will go to the Global Abuse emails.  Review the emails before hitting `Send`.
    The web browser will open with the Google Safe Browsing link and the spam URL filled in.  You can add `Additional details` such as `Phishing scam URL from UCE spam email` and click submit.  Rinse and report for the other Google Safe Browsing tabs in the web browser to report the spam URLs to Google
+  
    Wait until the script finishes
+  
    You can check the /Spamjam/output folder for the final report which has already been reported via email
