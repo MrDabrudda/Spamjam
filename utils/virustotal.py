@@ -9,6 +9,9 @@ from .utils import enforce_rate_limit
 
 logger = logging.getLogger(__name__)
 
+VIRUSTOTAL_API_BASE = "https://www.virustotal.com/api/v3"
+HTTP_TIMEOUT = 30
+
 def _get_url_id(url: str) -> str:
     """
     Generate VirusTotal URL identifier.
@@ -33,14 +36,14 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
 
     # 1. Submit URL for scanning
     enforce_rate_limit("VirusTotal", RATE_LIMIT_VIRUSTOTAL)
-    scan_endpoint = "https://www.virustotal.com/api/v3/urls"
+    scan_endpoint = f"{VIRUSTOTAL_API_BASE}/urls"
     
     # Form data for URL submission
     data = {"url": url}
     
     success = False
     try:
-        response = requests.post(scan_endpoint, headers=headers, data=data, timeout=30)
+        response = requests.post(scan_endpoint, headers=headers, data=data, timeout=HTTP_TIMEOUT)
         if response.status_code in [200, 201]:
             logger.info("Successfully submitted URL to VirusTotal: %s", url)
             success = True
@@ -62,8 +65,19 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
         # Add Comment
         if comment:
             enforce_rate_limit("VirusTotal", RATE_LIMIT_VIRUSTOTAL)
-            comment_endpoint = f"https://www.virustotal.com/api/v3/urls/{url_id}/comments"
+            comment_endpoint = f"{VIRUSTOTAL_API_BASE}/urls/{url_id}/comments"
             
+            # Truncate comment to 500 characters to ensure API acceptance
+            if len(comment) > 500:
+                logger.warning("VirusTotal comment length %d exceeds 500 limit. Truncating cleanly.", len(comment))
+                limit = 500 - 20
+                truncated = comment[:limit]
+                last_newline = truncated.rfind('\n')
+                if last_newline > 0:
+                    comment = truncated[:last_newline] + "\n[...truncated...]"
+                else:
+                    comment = truncated + "\n[...]"
+
             payload = {
                 "data": {
                     "type": "comment",
@@ -74,7 +88,7 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
             }
 
             try:
-                response = requests.post(comment_endpoint, headers=headers, json=payload, timeout=30)
+                response = requests.post(comment_endpoint, headers=headers, json=payload, timeout=HTTP_TIMEOUT)
                 if response.status_code == 200:
                     logger.info("Successfully added comment to VirusTotal.")
                 else:
@@ -84,7 +98,7 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
 
         # Add Vote (Malicious)
         enforce_rate_limit("VirusTotal", RATE_LIMIT_VIRUSTOTAL)
-        vote_endpoint = f"https://www.virustotal.com/api/v3/urls/{url_id}/votes"
+        vote_endpoint = f"{VIRUSTOTAL_API_BASE}/urls/{url_id}/votes"
         
         vote_payload = {
             "data": {
@@ -96,7 +110,7 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
         }
 
         try:
-            response = requests.post(vote_endpoint, headers=headers, json=vote_payload, timeout=30)
+            response = requests.post(vote_endpoint, headers=headers, json=vote_payload, timeout=HTTP_TIMEOUT)
             if response.status_code == 200:
                 logger.info("Successfully voted 'malicious' on VirusTotal.")
             else:
