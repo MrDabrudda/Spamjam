@@ -2,6 +2,7 @@
 
 import requests
 import base64
+import time
 import logging
 from typing import Optional
 from .config import VIRUSTOTAL_API_KEY, RATE_LIMIT_VIRUSTOTAL
@@ -30,6 +31,8 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
         logger.warning("VirusTotal API key not configured.")
         return False
 
+    url = url.strip()
+
     headers = {
         "x-apikey": VIRUSTOTAL_API_KEY
     }
@@ -57,6 +60,9 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
 
     # 2. Add comment and vote if scan was successful
     if success:
+        # Allow a brief pause for VirusTotal to propagate the new scan entry
+        time.sleep(5)
+
         url_id = _get_url_id(url)
         if not url_id:
             logger.error("Could not generate URL ID for VirusTotal operations.")
@@ -87,14 +93,21 @@ def report_to_virustotal(url: str, comment: Optional[str] = None) -> bool:
                 }
             }
 
-            try:
-                response = requests.post(comment_endpoint, headers=headers, json=payload, timeout=HTTP_TIMEOUT)
-                if response.status_code == 200:
-                    logger.info("Successfully added comment to VirusTotal.")
-                else:
-                    logger.warning("Failed to add comment to VirusTotal: %s %s", response.status_code, response.text)
-            except Exception as e:
-                logger.error("Error adding comment to VirusTotal: %s", e)
+            for attempt in range(3):
+                try:
+                    response = requests.post(comment_endpoint, headers=headers, json=payload, timeout=HTTP_TIMEOUT)
+                    if response.status_code == 200:
+                        logger.info("Successfully added comment to VirusTotal.")
+                        break
+                    elif response.status_code >= 500:
+                        logger.warning("VirusTotal server error %s (attempt %d/3). Retrying...", response.status_code, attempt + 1)
+                        time.sleep(5)
+                    else:
+                        logger.warning("Failed to add comment to VirusTotal: %s %s", response.status_code, response.text)
+                        break
+                except Exception as e:
+                    logger.error("Error adding comment to VirusTotal: %s", e)
+                    break
 
         # Add Vote (Malicious)
         enforce_rate_limit("VirusTotal", RATE_LIMIT_VIRUSTOTAL)

@@ -154,7 +154,8 @@ def _extract_abuse_emails(raw: str) -> List[str]:
     # Matches: "OrgAbuseEmail: ...", "Registrar Abuse Contact Email: ...", "abuse-mailbox: ..."
     header_patterns = [
         r"(?:OrgAbuseEmail|Registrar Abuse Contact Email|Abuse Contact Email|abuse-mailbox)\s*:\s*(\S+)",
-        r"OrgNOCEmail\s*:\s*(\S+)"
+        r"OrgNOCEmail\s*:\s*(\S+)",
+        r"(?:OrgTechEmail|Tech Email|Technical Contact Email)\s*:\s*(\S+)"
     ]
     
     for pattern in header_patterns:
@@ -167,7 +168,7 @@ def _extract_abuse_emails(raw: str) -> List[str]:
     # Only look for emails in lines that contain "abuse" or "noc"
     if not emails:
         for line in raw.splitlines():
-            if "abuse" in line.lower() or "noc" in line.lower():
+            if "abuse" in line.lower() or "noc" in line.lower() or "tech" in line.lower():
                 found = re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", line)
                 for email in found:
                     if _is_valid_email(email):

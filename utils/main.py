@@ -6,7 +6,7 @@ import time
 import logging
 import webbrowser
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from urllib.parse import quote, urlparse
 
 from .config import REDACT_EMAILS, GLOBAL_ABUSE_EMAILS, ABUSEIPDB_API_KEY
@@ -70,7 +70,7 @@ def get_report_targets(email_path: str) -> Dict[str, Any]:
     return targets
 
 
-def _get_abuse_emails_from_whois(ip_whois: Optional[Dict]) -> List[str]:
+def _get_abuse_emails_from_whois(ip_whois: Optional[Dict], is_brazilian: bool = False) -> List[str]:
     if not ip_whois:
         return []
     emails = ip_whois.get("emails")
@@ -79,8 +79,45 @@ def _get_abuse_emails_from_whois(ip_whois: Optional[Dict]) -> List[str]:
     valid_emails = _extract_valid_emails(emails)
     if not valid_emails:
         return []
-    abuse_emails = [e for e in valid_emails if "abuse" in e.lower() or "noc" in e.lower()]
+    keywords = ["abuse", "noc"]
+    if is_brazilian:
+        keywords.append("tech")
+    abuse_emails = [e for e in valid_emails if any(k in e.lower() for k in keywords)]
     return abuse_emails if abuse_emails else valid_emails
+
+
+def _get_ip_reputation(ip: str) -> Tuple[Optional[List[str]], Optional[Dict[str, Any]]]:
+    """Helper to check DNSBL and AbuseIPDB with caching."""
+    dnsbl_key = f"dnsbl:{ip}"
+    dnsbl_hits = cache_get(dnsbl_key)
+    if dnsbl_hits is None:
+        dnsbl_hits = check_dnsbl(ip)
+        cache_set(dnsbl_key, dnsbl_hits)
+
+    abuse_key = f"abuseipdb:{ip}"
+    abuseData = cache_get(abuse_key)
+    if abuseData is None:
+        abuseData = check_abuseipdb(ip)
+        cache_set(abuse_key, abuseData)
+    return dnsbl_hits, abuseData
+
+
+def _get_abuse_contact_info(ip: str) -> Tuple[List[str], str, Optional[Dict[str, Any]]]:
+    """Helper to get Whois info and extract abuse contacts with caching and fallbacks."""
+    whois_key = f"whois:{ip}"
+    ip_whois = cache_get(whois_key)
+    if ip_whois is None:
+        ip_whois = get_whois_info(ip)
+        cache_set(whois_key, ip_whois)
+
+    is_br = is_brazilian_ip(ip)
+    found_emails = _get_abuse_emails_from_whois(ip_whois, is_brazilian=is_br)
+
+    if not found_emails and is_br:
+        found_emails = ["cert@cert.br", "mail-abuse@cert.br", "soc@cert.br"]
+
+    abuse_contact = ", ".join(found_emails) if found_emails else "Not found"
+    return found_emails, abuse_contact, ip_whois
 
 
 def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[str]:
@@ -114,17 +151,7 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
     if sender_ip:
         report_lines.append(f"\n[+] Sender IP: {sender_ip}")
 
-        dnsbl_key = f"dnsbl:{sender_ip}"
-        dnsbl_hits = cache_get(dnsbl_key)
-        if dnsbl_hits is None:
-            dnsbl_hits = check_dnsbl(sender_ip)
-            cache_set(dnsbl_key, dnsbl_hits)
-
-        abuse_key = f"abuseipdb:{sender_ip}"
-        abuseData = cache_get(abuse_key)
-        if abuseData is None:
-            abuseData = check_abuseipdb(sender_ip)
-            cache_set(abuse_key, abuseData)
+        dnsbl_hits, abuseData = _get_ip_reputation(sender_ip)
 
         is_suspicious = False
         if dnsbl_hits:
@@ -159,18 +186,7 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
         else:
             report_lines.append("    AbuseIPDB: Skipped")
 
-        whois_key = f"whois:{sender_ip}"
-        ip_whois = cache_get(whois_key)
-        if ip_whois is None:
-            ip_whois = get_whois_info(sender_ip)
-            cache_set(whois_key, ip_whois)
-
-        abuse_contact = "Not found"
-        found_emails = _get_abuse_emails_from_whois(ip_whois)
-
-        if not found_emails and is_brazilian_ip(sender_ip):
-            found_emails = ["cert@cert.br", "mail-abuse@cert.br"]
-
+        found_emails, abuse_contact, ip_whois = _get_abuse_contact_info(sender_ip)
         original_ip_has_contact = bool(found_emails)
 
         # If no contact found, try to find upstream provider via traceroute
@@ -178,13 +194,7 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
             hops = perform_traceroute(sender_ip)
             # Check hops in reverse (closest to target first) to find immediate upstream
             for hop_ip in reversed(hops):
-                whois_key = f"whois:{hop_ip}"
-                hop_whois = cache_get(whois_key)
-                if hop_whois is None:
-                    hop_whois = get_whois_info(hop_ip)
-                    cache_set(whois_key, hop_whois)
-                
-                hop_emails = _get_abuse_emails_from_whois(hop_whois)
+                hop_emails, _, hop_whois = _get_abuse_contact_info(hop_ip)
                 if hop_emails:
                     found_emails = hop_emails
                     abuse_contact = f"{', '.join(found_emails)} (via upstream {hop_ip})"
@@ -232,16 +242,9 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                     report_lines.append(f"  Domain: {domain} → {', '.join(ips)}")
                 
                 first_ip = ips[0]
-                whois_key = f"whois:{first_ip}"
-                ip_whois = cache_get(whois_key)
-                if ip_whois is None:
-                    ip_whois = get_whois_info(first_ip)
-                    cache_set(whois_key, ip_whois)
-                hosting_abuse = "Not found"
-                found_emails = _get_abuse_emails_from_whois(ip_whois)
+                found_emails, hosting_abuse, ip_whois = _get_abuse_contact_info(first_ip)
 
                 if found_emails:
-                    hosting_abuse = ", ".join(found_emails)
                     all_abuse_emails.update(found_emails)
                 report_lines.append(f"    Hosting Abuse Contact: {hosting_abuse}")
                 if not found_emails:
@@ -289,11 +292,15 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                                 if abuse_matches:
                                     found_emails = list(set(abuse_matches))
 
-                        if not found_emails and is_brazilian_ip(ip_or_host):
-                            found_emails = ["cert@cert.br", "mail-abuse@cert.br"]
+                        is_br_mx = is_brazilian_ip(ip_or_host)
+                        if not found_emails and is_br_mx:
+                            found_emails = ["cert@cert.br", "mail-abuse@cert.br", "soc@cert.br"]
 
                         if found_emails:
-                            abuse_emails = [e for e in found_emails if "abuse" in e.lower() or "noc" in e.lower()]
+                            keywords = ["abuse", "noc"]
+                            if is_br_mx:
+                                keywords.append("tech")
+                            abuse_emails = [e for e in found_emails if any(k in e.lower() for k in keywords)]
                             selected = abuse_emails if abuse_emails else found_emails
                             mx_abuse = ", ".join(selected)
                             all_abuse_emails.update(selected)
@@ -367,39 +374,19 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                             
                             first_ip = ips[0]
                             
-                            dnsbl_key = f"dnsbl:{first_ip}"
-                            dnsbl_hits = cache_get(dnsbl_key)
-                            if dnsbl_hits is None:
-                                dnsbl_hits = check_dnsbl(first_ip)
-                                cache_set(dnsbl_key, dnsbl_hits)
+                            dnsbl_hits, abuseData_url = _get_ip_reputation(first_ip)
                             if dnsbl_hits:
                                 report_lines.append(f"    → DNSBL Listed: {', '.join(dnsbl_hits)}")
                             else:
                                 report_lines.append("    → DNSBL: Not listed")
 
-                            abuse_key = f"abuseipdb:{first_ip}"
-                            abuseData_url = cache_get(abuse_key)
-                            if abuseData_url is None:
-                                abuseData_url = check_abuseipdb(first_ip)
-                                cache_set(abuse_key, abuseData_url)
                             if abuseData_url:
                                 report_lines.append(f"    → AbuseIPDB Total Reports: {abuseData_url['total_reports']}")
                             else:
                                 report_lines.append("    → AbuseIPDB: Skipped")
 
-                            whois_key = f"whois:{first_ip}"
-                            ip_whois = cache_get(whois_key)
-                            if ip_whois is None:
-                                ip_whois = get_whois_info(first_ip)
-                                cache_set(whois_key, ip_whois)
-                            abuse_contact_url = "Not found"
-                            found_emails = _get_abuse_emails_from_whois(ip_whois)
-
-                            if not found_emails and is_brazilian_ip(first_ip):
-                                found_emails = ["cert@cert.br", "mail-abuse@cert.br"]
-
+                            found_emails, abuse_contact_url, ip_whois = _get_abuse_contact_info(first_ip)
                             if found_emails:
-                                abuse_contact_url = ", ".join(found_emails)
                                 all_abuse_emails.update(found_emails)
                             report_lines.append(f"    → Abuse Contact: {abuse_contact_url}")
                             if not found_emails:
@@ -614,6 +601,37 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                     if url in reported_urls:
                         continue
                     success = report_to_hybrid_analysis(url)
+                    status = "✅ Success" if success else "❌ Failed"
+                    report_lines.append(f"    URL {url}: {status}")
+                    reported_urls.add(url)
+            else:
+                report_lines.append("    No URLs found to report.")
+
+        # IPQS URL Reporting
+        ipqs_configured = False
+        try:
+            from .config import IPQS_API_KEY
+            if IPQS_API_KEY and IPQS_API_KEY.strip():
+                ipqs_configured = True
+        except (ImportError, AttributeError):
+            pass
+
+        if ipqs_configured:
+            from .ipqs import report_to_ipqs
+            report_lines.append("\n[+] IPQS URL Reporting:")
+            urls_to_report = []
+            if html_body:
+                all_urls = extract_urls_from_html(html_body)
+                for url in all_urls:
+                    if not is_url_excluded(url):
+                        urls_to_report.append(url)
+
+            if urls_to_report:
+                reported_urls = set()
+                for url in urls_to_report:
+                    if url in reported_urls:
+                        continue
+                    success = report_to_ipqs(url)
                     status = "✅ Success" if success else "❌ Failed"
                     report_lines.append(f"    URL {url}: {status}")
                     reported_urls.add(url)
