@@ -1,16 +1,27 @@
 import logging
 import requests
+import time
 from . import config
 
 logger = logging.getLogger(__name__)
+
+_last_request_time = 0
 
 def report_to_spamhaus(url: str) -> bool:
     """
     Submit a URL to Spamhaus for analysis.
     API Docs: https://submit.spamhaus.org/portal/api/v1/submissions/add/url
     """
+    global _last_request_time
     if not hasattr(config, 'SPAMHAUS_API_KEY') or not config.SPAMHAUS_API_KEY:
         return False
+
+    # Rate limiting: Default to 1 second if not configured
+    rate_limit = getattr(config, 'SPAMHAUS_RATE_LIMIT', 1)
+    elapsed = time.time() - _last_request_time
+    if elapsed < rate_limit:
+        time.sleep(rate_limit - elapsed)
+    _last_request_time = time.time()
 
     # Endpoint for URL submission
     api_url = "https://submit.spamhaus.org/portal/api/v1/submissions/add/url"
