@@ -638,6 +638,37 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
             else:
                 report_lines.append("    No URLs found to report.")
 
+        # Spamhaus URL Reporting
+        spamhaus_configured = False
+        try:
+            from .config import SPAMHAUS_API_KEY
+            if SPAMHAUS_API_KEY and SPAMHAUS_API_KEY.strip():
+                spamhaus_configured = True
+        except (ImportError, AttributeError):
+            pass
+
+        if spamhaus_configured:
+            from .spamhaus import report_to_spamhaus
+            report_lines.append("\n[+] Spamhaus URL Reporting:")
+            urls_to_report = []
+            if html_body:
+                all_urls = extract_urls_from_html(html_body)
+                for url in all_urls:
+                    if not is_url_excluded(url):
+                        urls_to_report.append(url)
+
+            if urls_to_report:
+                reported_urls = set()
+                for url in urls_to_report:
+                    if url in reported_urls:
+                        continue
+                    success = report_to_spamhaus(url)
+                    status = "✅ Success" if success else "❌ Failed"
+                    report_lines.append(f"    URL {url}: {status}")
+                    reported_urls.add(url)
+            else:
+                report_lines.append("    No URLs found to report.")
+
     if all_abuse_emails:
         sorted_emails = sorted(all_abuse_emails)
         report_lines.append(f"\n[+] Deduplicated Abuse & Registrar Contacts ({len(sorted_emails)}):")
