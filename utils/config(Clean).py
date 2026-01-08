@@ -16,6 +16,8 @@ URLSCAN_API_KEY = ""
 HYBRID_ANALYSIS_API_KEY = ""
 SPAM_ORG_API_KEY = ""
 VIRUSTOTAL_API_KEY = ""
+IPQS_API_KEY = ""
+SPAMHAUS_API_KEY =
 
 # -----------------------------------------------------------------------------
 # System Settings (Cache, Files, Network)
@@ -34,13 +36,15 @@ IANA_WHOIS_SERVER = "whois.iana.org"
 WHOIS_TIMEOUT = 10
 
 # Rate Limits (seconds per request)
-RATE_LIMIT_ABUSEIPDB = 4.0     # 150 submissions/min
-RATE_LIMIT_CRDF = 32.0         # 2 submissions/min <--Very flaky even at 30sec
-RATE_LIMIT_URLSCAN = 2.0       # 30 submissions/min
-HYBRID_ANALYSIS_RATE_LIMIT = 10 # 6 submissions/min
+RATE_LIMIT_ABUSEIPDB = 4.0      # 15 submissions/min
+RATE_LIMIT_CRDF = 32.0          # 2 submissions/min <--Very flaky even at 30sec
+RATE_LIMIT_URLSCAN = 4.0        # 15 submissions/min
+HYBRID_ANALYSIS_RATE_LIMIT = 15  # 4 submissions/min
 HYBRID_ANALYSIS_RATE_WINDOW = 20
-RATE_LIMIT_SPAM_ORG = 2.0      # 30 submissions/min
-RATE_LIMIT_VIRUSTOTAL = 15.0   # 4 submissions/min (Public API)
+RATE_LIMIT_SPAM_ORG = 4.0       # 15 submissions/min
+RATE_LIMIT_VIRUSTOTAL = 15.0    # 4 submissions/min
+IPQS_RATE_LIMIT = 4.0           # 15 submission/min
+SPAMHAUS_RATE_LIMIT = 4.0       # 15 submission/min
 
 # -----------------------------------------------------------------------------
 # Privacy & Redaction
