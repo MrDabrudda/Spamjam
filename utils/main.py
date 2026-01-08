@@ -16,7 +16,6 @@ from .email_processor import parse_email_file, get_sender_ip_from_email
 from .dns_utils import reverse_dns_lookup, check_dnsbl, get_mx_records, resolve_domain_to_ipv4
 from .whois import get_whois_info, is_brazilian_ip
 from .abuseipdb import check_abuseipdb, report_to_abuseipdb
-from .crdf import report_to_crdf
 from .urlscanio import report_to_urlscan
 from .hybrid_analysis import report_to_hybrid_analysis
 from .spam_org import report_to_spam_org
@@ -467,31 +466,6 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                 report_to_spam_org(raw)
             return lines
 
-        def task_crdf():
-            lines = []
-            crdf_configured = False
-            try:
-                from .config import CRDF_API_KEY
-                if CRDF_API_KEY and CRDF_API_KEY.strip():
-                    crdf_configured = True
-            except (ImportError, AttributeError):
-                pass
-
-            if crdf_configured:
-                lines.append("\n[+] CRDF Labs URL Reporting:")
-                if urls_to_report:
-                    reported_urls = set()
-                    for url in urls_to_report:
-                        if url in reported_urls:
-                            continue
-                        success = report_to_crdf(url)
-                        status = "✅ Success" if success else "❌ Failed"
-                        lines.append(f"    URL {url}: {status}")
-                        reported_urls.add(url)
-                else:
-                    lines.append("    No URLs found to report.")
-            return lines
-
         def task_urlscan():
             lines = []
             urlscan_configured = False
@@ -599,13 +573,12 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
             future_map = {
                 executor.submit(task_abuseipdb): 0,
                 executor.submit(task_spam_org): 1,
-                executor.submit(task_crdf): 2,
-                executor.submit(task_urlscan): 3,
-                executor.submit(task_virustotal): 4,
-                executor.submit(task_hybrid): 5
+                executor.submit(task_urlscan): 2,
+                executor.submit(task_virustotal): 3,
+                executor.submit(task_hybrid): 4
             }
             
-            results = [[] for _ in range(6)]
+            results = [[] for _ in range(5)]
             for future in concurrent.futures.as_completed(future_map):
                 idx = future_map[future]
                 try:
