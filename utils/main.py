@@ -594,32 +594,6 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                     lines.append("    No URLs found to report.")
             return lines
 
-        def task_spamhaus():
-            lines = []
-            spamhaus_configured = False
-            try:
-                from .config import SPAMHAUS_API_KEY
-                if SPAMHAUS_API_KEY and SPAMHAUS_API_KEY.strip():
-                    spamhaus_configured = True
-            except (ImportError, AttributeError):
-                pass
-
-            if spamhaus_configured:
-                from .spamhaus import report_to_spamhaus
-                lines.append("\n[+] Spamhaus URL Reporting:")
-                if urls_to_report:
-                    reported_urls = set()
-                    for url in urls_to_report:
-                        if url in reported_urls:
-                            continue
-                        success = report_to_spamhaus(url)
-                        status = "✅ Success" if success else "❌ Failed"
-                        lines.append(f"    URL {url}: {status}")
-                        reported_urls.add(url)
-                else:
-                    lines.append("    No URLs found to report.")
-            return lines
-
         # Execute tasks in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             future_map = {
@@ -628,11 +602,10 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
                 executor.submit(task_crdf): 2,
                 executor.submit(task_urlscan): 3,
                 executor.submit(task_virustotal): 4,
-                executor.submit(task_hybrid): 5,
-                executor.submit(task_spamhaus): 6
+                executor.submit(task_hybrid): 5
             }
             
-            results = [[] for _ in range(7)]
+            results = [[] for _ in range(6)]
             for future in concurrent.futures.as_completed(future_map):
                 idx = future_map[future]
                 try:
