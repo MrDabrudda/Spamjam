@@ -76,13 +76,13 @@ DNSBL_SERVERS = [
 # These appear in the final report for easy forwarding
 GLOBAL_ABUSE_EMAILS = [
     "reportphishing@apwg.org",          # Anti-Phishing Working Group (phishing URLs)
-    #"phishing-report@us-cert.gov",     # U.S. CISA (phishing & cyber incidents) <---No longer active
     "scam@netcraft.com",                # Netcraft (scams & phishing sites)
     "spam@donotpay.com",                # DoNotPay Spam Reporting
     "spamreport@spamrl.com",            # Spam Reporting Service
     "abuse@phishtank.com",              # PhishTank (phishing URLs)
-    #"support@urlhaus.abuse.ch",        # Abuse contact for URLhaus (malware URLs) <---Only accepts malware...not phishing urls
+    #"Sign up @ Abusix.com to get an email address to forward spam emails"@smtp-forward.abusix.com", #Abusix Reporting
 ]
+
 # -----------------------------------------------------------------------------
 # Domain Exclusions
 # -----------------------------------------------------------------------------
@@ -113,7 +113,4 @@ EXCLUDED_DOMAINS = [
     "*.avcdn.net",
     "*.wikimedia.com",
     "www.google.com",
-    
-    # AWS
-    "*.amazonses.com",
 ]
