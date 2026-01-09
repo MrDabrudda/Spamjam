@@ -569,7 +569,7 @@ def run_analysis(email_path: str, enable_reporting: bool = False) -> Optional[st
             return lines
 
         # Execute tasks in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=9) as executor:
             future_map = {
                 executor.submit(task_abuseipdb): 0,
                 executor.submit(task_spam_org): 1,

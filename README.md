@@ -69,7 +69,7 @@ SpamJam is a powerful **open-source Python tool** that extracts and analyzes ema
    ```
 
 3. **Configure API Keys**
-   Open `utils/config.py` and enter your API keys in the API Keys section.  You will need to sign up with each service for the API keys.
+   Open `utils/config.py` and enter your API keys in the API Keys section.
 
 4. ***Configure Email Redaction***
    Add your email addresses, names, usernames, etc to the Redacted Emails section of the config.py so your email, name, username does not get included in the submitted abuse reports.  Many reports will be public.

@@ -11,13 +11,10 @@ import os
 
 # API Keys
 ABUSEIPDB_API_KEY = ""
-CRDF_API_KEY = "" #<---2 submission per minute, limit of 200 per day
 URLSCAN_API_KEY = ""
 HYBRID_ANALYSIS_API_KEY = ""
 SPAM_ORG_API_KEY = ""
 VIRUSTOTAL_API_KEY = ""
-IPQS_API_KEY = ""
-SPAMHAUS_API_KEY =
 
 # -----------------------------------------------------------------------------
 # System Settings (Cache, Files, Network)
